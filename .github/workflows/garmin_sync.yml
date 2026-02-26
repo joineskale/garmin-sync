@@ -1,0 +1,34 @@
+name: Garmin Notion Sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync Garmin data to Notion
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install garminconnect notion-client python-dotenv requests
+
+      - name: Run Garmin to Notion sync
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_WELLNESS_DB_ID: ${{ secrets.NOTION_WELLNESS_DB_ID }}
+          NOTION_STRAVA_DB_ID: ${{ secrets.NOTION_STRAVA_DB_ID }}
+        run: |
+          python sync.py
