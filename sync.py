@@ -59,8 +59,8 @@ def connect_garmin():
         for filename, content in token_data.items():
             (token_dir / filename).write_text(content)
         log.info("Logging in to Garmin Connect via stored OAuth tokens ...")
-        client = Garmin()
-        client.login(str(token_dir))
+        client = Garmin(tokenstore=str(token_dir))
+        client.login()
     else:
         # Fallback: direct login (works only if Garmin does not require MFA)
         if not GARMIN_EMAIL or not GARMIN_PASSWORD:
