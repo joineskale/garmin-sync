@@ -10,7 +10,6 @@ import pathlib
 import tempfile
 import datetime
 import logging
-import garth
 from garminconnect import Garmin
 from notion_client import Client
 
@@ -38,10 +37,8 @@ def connect_garmin():
         for filename, content in token_data.items():
             (token_dir / filename).write_text(content)
         log.info("Logging in to Garmin Connect via stored OAuth tokens ...")
-        garth.load(str(token_dir))
         client = Garmin()
-        client.garth = garth.client
-        client.display_name = garth.client.profile.get("displayName", "")
+        client.login(tokenstore=str(token_dir))
     else:
         if not GARMIN_EMAIL or not GARMIN_PASSWORD:
             log.error("No GARMIN_TOKENS_JSON and no GARMIN_EMAIL/GARMIN_PASSWORD set.")
