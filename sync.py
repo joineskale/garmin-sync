@@ -53,7 +53,7 @@ def connect_garmin():
                 token_dir = pathlib.Path(tempfile.mkdtemp())
                 try:
                               token_data = json.loads(GARMIN_TOKENS_JSON)
-except json.JSONDecodeError as exc:
+    except json.JSONDecodeError as exc:
             log.error("GARMIN_TOKENS_JSON is not valid JSON: %s", exc)
             sys.exit(1)
 
