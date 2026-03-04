@@ -150,33 +150,23 @@ def upsert_activities(notion, activities, date):
     for act in activities:
         name = act.get("activityName", "Workout")
         act_type = act.get("activityType", {}).get("typeKey", "unknown")
-        duration = round((act.get("duration", 0) or 0) / 60, 1)
+        duration_min = round((act.get("duration", 0) or 0) / 60, 1)
         distance = round((act.get("distance", 0) or 0) / 1000, 2)
         calories = act.get("calories", 0)
         avg_hr = act.get("averageHR", None)
-        act_id = str(act.get("activityId", ""))
+        start_time = act.get("startTimeLocal", date)
         props = {
             "Name": {"title": [{"text": {"content": name}}]},
-            "Date": {"date": {"start": date}},
-            "Type": {"select": {"name": act_type}},
-            "Duration (min)": safe_number(duration),
+            "Date": {"date": {"start": start_time}},
+            "Activity Type": {"select": {"name": act_type}},
+            "Duration (min)": safe_number(duration_min),
             "Distance (km)": safe_number(distance),
             "Calories": safe_number(calories),
-            "Garmin ID": {"rich_text": [{"text": {"content": act_id}}]},
         }
         if avg_hr:
             props["Avg HR"] = safe_number(avg_hr)
-        results = notion.databases.query(
-            database_id=STRAVA_DB_ID,
-            filter={"property": "Garmin ID", "rich_text": {"equals": act_id}}
-        )
-        existing = results.get("results", [])
-        if existing:
-            notion.pages.update(page_id=existing[0]["id"], properties=props)
-            log.info("Updated activity '%s' (%s)", name, act_id)
-        else:
-            notion.pages.create(parent={"database_id": STRAVA_DB_ID}, properties=props)
-            log.info("Created activity '%s' (%s)", name, act_id)
+        notion.pages.create(parent={"database_id": STRAVA_DB_ID}, properties=props)
+        log.info("Created activity '%s' (%s)", name, start_time)
 
 
 def main():
