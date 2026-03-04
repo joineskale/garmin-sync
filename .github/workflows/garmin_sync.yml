@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-                    pip install --upgrade garminconnect garth notion-client python-dotenv requests
+                              pip install --upgrade garminconnect "notion-client>=2.0.0,<3" requests
 
       - name: Run Garmin to Notion sync
         env:
