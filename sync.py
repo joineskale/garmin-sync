@@ -122,6 +122,18 @@ def find_page_by_date(notion, db_id, date_str):
     return pages[0] if pages else None
 
 
+def dump_db_schema(notion, db_id, label):
+    """Print the actual property names and types in a Notion database."""
+    log.info("--- Schema dump: %s (id=%s) ---", label, db_id)
+    try:
+        db = notion.databases.retrieve(database_id=db_id)
+        props = db.get("properties", {})
+        for name, prop in sorted(props.items()):
+            log.info("  PROP: %r  type=%s", name, prop.get("type"))
+    except Exception as exc:
+        log.error("  Could not retrieve schema: %s", exc)
+
+
 def upsert_wellness(notion, wellness, date):
     props = {
         "Date": {"date": {"start": date}},
@@ -146,29 +158,6 @@ def upsert_wellness(notion, wellness, date):
         log.info("Created wellness page for %s", date)
 
 
-def upsert_activities(notion, activities, date):
-    for act in activities:
-        name = act.get("activityName", "Workout")
-        act_type = act.get("activityType", {}).get("typeKey", "unknown")
-        duration_min = round((act.get("duration", 0) or 0) / 60, 1)
-        distance = round((act.get("distance", 0) or 0) / 1000, 2)
-        calories = act.get("calories", 0)
-        avg_hr = act.get("averageHR", None)
-        start_time = act.get("startTimeLocal", date)
-        props = {
-            "Name": {"title": [{"text": {"content": name}}]},
-            "Date": {"date": {"start": start_time}},
-            "Activity Type": {"select": {"name": act_type}},
-            "Duration (min)": safe_number(duration_min),
-            "Distance (km)": safe_number(distance),
-            "Calories": safe_number(calories),
-        }
-        if avg_hr:
-            props["Avg HR"] = safe_number(avg_hr)
-        notion.pages.create(parent={"database_id": STRAVA_DB_ID}, properties=props)
-        log.info("Created activity '%s' (%s)", name, start_time)
-
-
 def main():
     log.info("=== Garmin -> Notion Sync | date: %s ===", TODAY)
     gc = connect_garmin()
@@ -179,10 +168,9 @@ def main():
     log.info("Wellness data: %s", json.dumps(wellness, indent=2))
     upsert_wellness(notion, wellness, TODAY)
 
-    log.info("--- Activities ---")
-    activities = fetch_activities(gc, TODAY)
-    log.info("Found %d activit(ies)", len(activities))
-    upsert_activities(notion, activities, TODAY)
+    log.info("--- Schema Diagnostics ---")
+    dump_db_schema(notion, WELLNESS_DB_ID, "Wellness DB")
+    dump_db_schema(notion, STRAVA_DB_ID, "Strava/Activities DB")
 
     log.info("=== Sync complete ===")
 
