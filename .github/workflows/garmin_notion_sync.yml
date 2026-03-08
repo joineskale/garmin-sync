@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
+    - cron: '0 18 * * *'
 
 jobs:
   sync:
@@ -17,11 +18,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
-                                        pip install --upgrade garminconnect "notion-client==2.2.1" requests
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run Garmin to Notion sync
         env:
@@ -32,4 +34,4 @@ jobs:
           NOTION_WELLNESS_DB_ID: ${{ secrets.NOTION_WELLNESS_DB_ID }}
           NOTION_STRAVA_DB_ID: ${{ secrets.NOTION_STRAVA_DB_ID }}
         run: |
-          python sync.py
+          python garmin_to_notion.py
