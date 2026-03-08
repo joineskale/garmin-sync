@@ -21,10 +21,6 @@ garmin_to_notion.py
 - `NOTION_WELLNESS_DB_ID`
 - `NOTION_STRAVA_DB_ID`
 
-## Optional environment variable
-
-- `GARMIN_TOKENS_JSON` (useful when Garmin account requires MFA)
-
 ## Run locally
 
 ```bash

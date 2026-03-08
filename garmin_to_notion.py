@@ -25,7 +25,7 @@ def main() -> None:
 
     activities = fetch_activities(garmin, today)
     log.info("Fetched %s activities", len(activities))
-    upsert_activities(notion, activities)
+    upsert_activities(notion, activities, today)
 
     log.info("=== Sync complete ===")
 

@@ -1,9 +1,6 @@
-import json
 import logging
 import os
-import pathlib
 import sys
-import tempfile
 
 from garminconnect import Garmin
 
@@ -11,27 +8,9 @@ log = logging.getLogger(__name__)
 
 GARMIN_EMAIL = os.environ.get("GARMIN_EMAIL", "")
 GARMIN_PASSWORD = os.environ.get("GARMIN_PASSWORD", "")
-GARMIN_TOKENS_JSON = os.environ.get("GARMIN_TOKENS_JSON", "")
 
 
 def connect_garmin() -> Garmin:
-    if GARMIN_TOKENS_JSON:
-        token_dir = pathlib.Path(tempfile.mkdtemp())
-        try:
-            token_data = json.loads(GARMIN_TOKENS_JSON)
-        except json.JSONDecodeError as exc:
-            log.error("GARMIN_TOKENS_JSON is not valid JSON: %s", exc)
-            sys.exit(1)
-
-        for filename, content in token_data.items():
-            (token_dir / filename).write_text(content)
-
-        log.info("Logging in to Garmin Connect via stored OAuth tokens ...")
-        client = Garmin()
-        client.login(tokenstore=str(token_dir))
-        log.info("Garmin login OK")
-        return client
-
     if not GARMIN_EMAIL or not GARMIN_PASSWORD:
         log.error("GARMIN_EMAIL and GARMIN_PASSWORD must be set.")
         sys.exit(1)
@@ -45,7 +24,7 @@ def connect_garmin() -> Garmin:
     )
     result1, _ = client.login()
     if result1 == "needs_mfa":
-        log.error("Garmin requires MFA. Set GARMIN_TOKENS_JSON for token-based login.")
+        log.error("Garmin requires MFA. Use an account app password or disable MFA for this integration.")
         sys.exit(1)
 
     log.info("Garmin login OK")
